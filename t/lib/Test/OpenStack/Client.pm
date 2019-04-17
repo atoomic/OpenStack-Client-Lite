@@ -23,23 +23,23 @@ sub run_client_tests ($@) {
 
         my @responses;
 
-        push @responses, map {
-            Test::OpenStack::Client::Response->new(%{$_})
-        } @{$test->{'responses'}} if defined $test->{'responses'};
+        push @responses,
+          map { Test::OpenStack::Client::Response->new(%{$_}) }
+          @{$test->{'responses'}}
+          if defined $test->{'responses'};
 
         unless (@responses) {
             push @responses, Test::OpenStack::Client::Response->new;
         }
 
         my $ua = Test::OpenStack::Client::UserAgent->generate(
-            'responses' => \@responses
-        );
+            'responses' => \@responses);
 
-        my $client = OpenStack::Client->new($endpoint,
+        my $client = OpenStack::Client->new(
+            $endpoint,
             'package_ua'       => $ua,
             'package_request'  => 'Test::OpenStack::Client::Request',
-            'package_response' => 'Test::OpenStack::Client::Response'
-        );
+            'package_response' => 'Test::OpenStack::Client::Response');
 
         $test->{'test'}->($client, $ua);
     }
@@ -54,23 +54,23 @@ sub run_auth_tests ($@) {
     my $credentials = {
         'tenant'   => 'foo',
         'username' => 'foo',
-        'password' => 'bar'
-    };
+        'password' => 'bar'};
 
     foreach my $test (@{$args{'tests'}}) {
         my $ua = Test::OpenStack::Client::UserAgent->generate(
-            'responses' => [Test::OpenStack::Client::Response->new(
-                'headers' => $args{'headers'},
-                'content' => $args{'content'}
-            )]
-        );
+            'responses' => [
+                Test::OpenStack::Client::Response->new(
+                    'headers' => $args{'headers'},
+                    'content' => $args{'content'}
+                )
+            ]);
 
-        my $auth = OpenStack::Client::Auth->new($endpoint, %{$credentials},
+        my $auth = OpenStack::Client::Auth->new(
+            $endpoint, %{$credentials},
             'version'          => $args{'version'},
             'package_ua'       => $ua,
             'package_request'  => 'Test::OpenStack::Client::Request',
-            'package_response' => 'Test::OpenStack::Client::Response'
-        );
+            'package_response' => 'Test::OpenStack::Client::Response');
 
         $test->($auth, $ua);
     }

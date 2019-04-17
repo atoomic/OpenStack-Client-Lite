@@ -10,8 +10,57 @@ use Test2::Plugin::NoWarnings;
 
 use OpenStack::Client ();
 
-note "enabling debug for OpenStack::Client";
-OpenStack::Client::enable_debug();
+#note "enabling debug for OpenStack::Client";
+#OpenStack::Client::enable_debug();
+
+use Test::MockModule;
+use JSON ();
+
+my $mock_lwp = Test::MockModule->new('LWP::UserAgent');
+
+my $json_object;
+
+$mock_lwp->redefine(
+    request => sub {
+        my ($self, @args) = @_;
+
+        $json_object //= JSON->new->pretty->indent->relaxed->allow_blessed(0)
+          ->convert_blessed(0);    # ->boolean_values( [ 0, 1 ] );
+
+        my $req = $args[0];
+
+        if (ref $req eq 'HTTP::Request') {
+            note $req->method, ": ", $req->uri;
+            my $content = $req->content // '';
+            if (length $content) {
+                $content =~ s{"password"\s*:\s*"[^"]+"}{"password":"********"}g;
+
+                my $as_json =
+                  eval { $json_object->encode($json_object->decode($content)) };
+                note "CONTENT: ", $as_json // $content;
+            }
+
+        }
+
+        #note explain \@args;
+        #note explain $output;
+
+        my $output = $mock_lwp->original('request')->($self, @args);
+
+        # display output answer
+        if (0 && ref $output eq 'HTTP::Response') {
+
+            note $output->is_success()? "Success: ": "Error: ", $output->code;
+
+            my $content = $output->content // '';
+            my $as_json =
+              eval { $json_object->encode($json_object->decode($content)) };
+
+            note "CONTENT: ", $as_json // $content;
+        }
+
+        return $output;
+    });
 
 my $VALID_ID = match qr{^[a-f0-9\-]+$};
 
@@ -24,7 +73,7 @@ my $SERVER_NAME = 'testsuite OpenStack::Client::Lite';
 
 SKIP: {
     skip "OS_AUTH_URL unset, please source one openrc.sh file before."
-        unless $ENV{OS_AUTH_URL};
+      unless $ENV{OS_AUTH_URL};
 
     my $endpoint = $ENV{OS_AUTH_URL} or die "Missing OS_AUTH_URL";
 
@@ -36,25 +85,40 @@ SKIP: {
         scope      => {
             project => {
                 name   => $ENV{'OS_PROJECT_NAME'},
-                domain => { id => 'default' },
+                domain => {id => 'default'},
             }
-            }
+          }
 
     );
 
-    {
-        
-        #my $floatingip = $api->floatingips( floating_ip_address => '10.1.35.246' );
-        #note "Floating IPs", explain $floatingip;         
+#note explain [ $api->port_from_uid( 'c6e81b29-0f82-4c9e-8c56-01175f56decd' ) ];
+#exit;
 
-        note "Port for a device... ", 
-            explain [ $api->ports( device_id => '42147502-68f1-41f8-a764-ada8dae81d65' ) ]; 
+    if (0) {
+
+    #my $floatingip = $api->floatingips( floating_ip_address => '10.1.35.246' );
+    #note "Floating IPs", explain $floatingip;
+
+        note "Port for a device... ";
+
+        my $port_for_device =
+          $api->ports(device_id => '42147502-68f1-41f8-a764-ada8dae81d65');
+        if ($port_for_device && $port_for_device->{id}) {
+
+            my $port_id = $port_for_device->{id};
+            my $floatingip = $api->floatingips(port_id => $port_id);
+            note explain $floatingip;
+
+            if ($floatingip && $floatingip->{id}) {
+                $api->delete_floatingip($floatingip->{id});
+            }
+
+        }
+
+        #note explain [ $api->floatingips() ];
         #my $port = $api->port_from_uid( $floatingip->{port_id} );
         #note explain $port;
-
     }
-
-    exit;
 
     {
         note "Security groups";
@@ -74,7 +138,7 @@ SKIP: {
             is $g, $valid_group, "security_groups return a valid group entry";
         }
 
-        my $group = $api->security_groups( name => 'default' );
+        my $group = $api->security_groups(name => 'default');
         is $group, $valid_group, "security_groups by name";
     }
 
@@ -87,7 +151,7 @@ SKIP: {
             field name => $IMAGE_NAME;
             etc;
         }, "image_from_uid $IMAGE_UID returns one image"
-            or die "Cannot find image from UID $IMAGE_UID";
+          or die "Cannot find image from UID $IMAGE_UID";
 
         my $image_from_name = $api->image_from_name($IMAGE_NAME);
         like $image_from_name, $image, "image_from_name $IMAGE_NAME";
@@ -109,7 +173,7 @@ SKIP: {
         "can create OpenStack::Client::Lite object"
     ) or die;
 
-    is [ $api->services ], [
+    is [$api->services], [
         'compute',
         'identity',
         'image',
@@ -118,15 +182,15 @@ SKIP: {
         'volume',
         'volumev2',
         'volumev3'
-        ],
-        "list os services from auth object";
+      ],
+      "list os services from auth object";
 
     #note explain $api->auth->catalog;
 
     #   note explain $api->flavors();
     {
         note "======= get a single flavor";
-        my $small = $api->flavors( name => 'small' );
+        my $small = $api->flavors(name => 'small');
         note explain $small;
         is $small => hash {
             field name  => 'small';
@@ -146,7 +210,7 @@ SKIP: {
                 field links => D();
                 field id    => $VALID_ID;
                 end;
-            }, "got flavor " . ( $flavor->{name} // 'undef' );
+            }, "got flavor " . ($flavor->{name} // 'undef');
         }
     }
 
@@ -167,27 +231,26 @@ SKIP: {
         };
 
         is $networks[0], $valid_network,
-            "network has some expected information";
+          "network has some expected information";
 
         my $id = $networks[0]->{id};
-        my $network = $api->networks( id => $id );
+        my $network = $api->networks(id => $id);
         is $network, $valid_network, "network from id looks valid";
         is $network->{id}, $id, "network id match";
 
-        my $network_by_name
-            = $api->networks( name => 'Dev Infra initial gre network' );
+        my $network_by_name =
+          $api->networks(name => 'Dev Infra initial gre network');
         if ($network_by_name) {
             is $network_by_name, $valid_network, "got a network by name";
 
-            my $network_by_name_regex
-                = $api->networks( name => qr{^Dev Infra} );
+            my $network_by_name_regex = $api->networks(name => qr{^Dev Infra});
 
             ## subnets are not sorted... and can come in a random order
             $network_by_name->{subnets}       = [];
             $network_by_name_regex->{subnets} = [];
 
             like $network_by_name_regex, $network_by_name,
-                "can get a network using a regex for the name";
+              "can get a network using a regex for the name";
 
         }
     }
@@ -204,7 +267,7 @@ SKIP: {
             flavor   => 'small',
             key_name => 'openStack nico',    # optional key to set
               #security_group => 'default', # security group to use, by default use 'default'
-            network => 'Dev Infra initial gre network', # network group to use
+            network => 'Dev Infra initial gre network',   # network group to use
                  # or network  => qr{Dev Infra}',
                  # or network  => 'fb5c81fd-0a05-46bc-8a7e-cb94dc851bb4 ',
 
@@ -213,25 +276,36 @@ SKIP: {
             network_for_floating_ip => 'vlan3340-product',
 
         );
+
+        note explain $vm;
+
+        like $vm, hash {
+            field id                  => $VALID_ID;
+            field name                => $SERVER_NAME;
+            field floating_ip_address => match qr/^\d+\.\d+\.\d+\.\d+$/a;
+            field floating_ip_id      => $VALID_ID;
+            field status              => 'ACTIVE';
+            etc;
+        }, "created a vm with a floating ip" or diag explain $vm;
     }
 
     note "delete_test_servers after test";
 
     #delete_test_servers( $api );
-    #note explain $api;
-
 }
+
 done_testing;
+exit;
 
 sub delete_test_servers {
     my ($api) = @_;
 
-    my @servers = $api->servers( name => $SERVER_NAME );
+    my @servers = $api->servers(name => $SERVER_NAME);
     foreach my $server (@servers) {
         next unless defined $server->{id} && length $server->{id};
         note "delete server - ", "id: ", $server->{id}, " ; name: ",
-            $server->{name};
-        note explain $api->delete_server( $server->{id} );
+          $server->{name};
+        note explain $api->delete_server($server->{id});
     }
 
     return;
@@ -239,52 +313,10 @@ sub delete_test_servers {
 
 __END__
 
-TODO 
-- check answer from add_floating_ip_to_server
-- use GetFromId role in more locations
+TODO
 - add the ip to the answer from create_vm
-- tidy
 - cleanup
-- remove some note
 - split the unit test
 - divide the module
-- move all modules to OpenStack::Client::API::Lite
-- submit PR to OpenStack::Client
-... 
-
-http://service01a-c2.cpanel.net:8774/v2.1/os-keypairs
-    
-> openstack server create 
-    --image 170fafa5-1329-44a3-9c27-9bb77b77206d 
-    --flavor small 
-    --key-name 'openStack nico' 
-    --security-group default 
-    --network fb5c81fd-0a05-46bc-8a7e-cb94dc851bb4 
-    --wait testFromAPI2 
-    --debug
-
-REQ: curl -g -i -X GET http://service01a-c2.cpanel.net:8774/v2.1/flavors -H "Accept: application/json" -H "User-Agent: p
-REQ: curl -g -i -X GET http://service01a-c2.cpanel.net:8774/v2.1/flavors/1ffe5704-06e5-4c2d-828c-496a06f477a4 -H "Accept
-REQ: curl -g -i -X GET http://service01a-c2.cpanel.net:9696/v2.0/networks/fb5c81fd-0a05-46bc-8a7e-cb94dc851bb4 -H "User-
-REQ: curl -g -i -X GET http://service01a-c2.cpanel.net:9696/v2.0/security-groups/default -H "User-Agent: openstacksdk/0.
-REQ: curl -g -i -X GET http://service01a-c2.cpanel.net:9696/v2.0/security-groups -H "Accept: application/json" -H "User-
-REQ: curl -g -i -X POST http://service01a-c2.cpanel.net:8774/v2.1/servers -H "Accept: application/json" -H "Content-Type
-REQ: curl -g -i -X POST http://service01a-c2.cpanel.net:8774/v2.1/servers -H "Accept: application/json" 
-    -H "Content-Type: application/json" -H "User-Agent: python-novaclient" 
-    -H "X-Auth-Token: {SHA256}2a39527dd72e1c2bf48cf33883e87c18a81d12e46d1d55e5ece4f8f1437fb3a8" 
-    -H "X-OpenStack-Nova-API-Version: 2.1" 
-    -d '{"server": {
-                        "name": "testFromAPI2", 
-                        "imageRef": "170fafa5-1329-44a3-9c27-9bb77b77206d", 
-                        "flavorRef": "1ffe5704-06e5-4c2d-828c-496a06f477a4", 
-                        "key_name": "openStack nico", 
-                        "min_count": 1, 
-                        "max_count": 1, 
-                        "security_groups": [{"name": "6f86e4c2-a498-4f4d-afe9-a2def5ada8c8"}], 
-                        "networks": [{"uuid": "fb5c81fd-0a05-46bc-8a7e-cb94dc851bb4"}]
-                    }
-        }'
-
-REQ: curl -g -i -X GET http://service01a-c2.cpanel.net:8774/v2.1/servers/6ac4b745-1501-46a8-9533-56e0a88ee3a1 -H "Accept
-... [ multiple times ?? /// wait ]
+...
 

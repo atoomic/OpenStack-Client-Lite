@@ -4,17 +4,8 @@ use strict;
 use warnings;
 
 use Moo;
-use Test::More;
 
 with 'OpenStack::Client::Lite::API::Specs::Roles::Service';
-
-# ... test
-my $specs = OpenStack::Client::Lite::API::Specs::Network::v2->new();
-note explain $specs->get('/v2.0/ports');
-
-#note explain [ OpenStack::Client::Lite::API::Specs::Network::v2->new()->specs() ];
-
-1;
 
 #
 # API specs: incomplete need to be continued
@@ -22,10 +13,37 @@ note explain $specs->get('/v2.0/ports');
 #   https://developer.openstack.org/api-ref/network/v2/index.html?expanded=list-ports-detail#ports
 #
 
+1;
+
 __DATA__
 ---
 get:
+  /v2.0/floatingips:
+    perl_api:
+      method: floatingips
+      type: listable
+      listable_key: floatingips
+    request:
+      query: {}
+  /v2.0/networks:
+    perl_api:
+      method: networks
+      type: listable
+      listable_key: networks
+    request:
+      query: {}
+  /v2.0/security-groups:
+    perl_api:
+      method: security_groups
+      type: listable
+      listable_key: security_groups
+    request:
+      query: {}
   /v2.0/ports:
+    perl_api:
+      method: ports
+      type: listable
+      listable_key: ports
     request:
       query:
         admin_state_up:
@@ -55,6 +73,10 @@ get:
           type: boolean
 put:
   /v2.0/ports/{port_id}:
+    perl_api:
+      method: port_from_uid
+      type: getfromid
+      uid: '{port_id}'
     request:
       path:
         port_id:
@@ -75,5 +97,5 @@ put:
         device_owner: {}
         dns_domain: {}
         dns_name: {}
-        extra_dhcp_opts: 
+        extra_dhcp_opts:
           type: array

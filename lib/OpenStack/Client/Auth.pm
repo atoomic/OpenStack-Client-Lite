@@ -115,8 +115,7 @@ sub new ($$%) {
 
     my %CLASSES = (
         '2.0' => 'OpenStack::Client::Auth::v2',
-        '3'   => 'OpenStack::Client::Auth::v3'
-    );
+        '3'   => 'OpenStack::Client::Auth::v3');
 
     unless (defined $endpoint) {
         die 'No OpenStack authentication endpoint provided';

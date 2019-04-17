@@ -17,9 +17,8 @@ sub new {
     $opts{'headers'} ||= {};
     $opts{'content'} ||= '';
 
-    my %headers = map {
-        lc $_ => $opts{'headers'}->{$_}
-    } keys %{$opts{'headers'}};
+    my %headers =
+      map { lc $_ => $opts{'headers'}->{$_} } keys %{$opts{'headers'}};
 
     $headers{'content-type'} ||= 'application/json';
 

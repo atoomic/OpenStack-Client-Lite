@@ -3,7 +3,6 @@ package OpenStack::Client::Lite::Routes;
 use strict;
 use warnings;
 
-use Test::More;
 use Moo;
 
 use OpenStack::Client::Lite::API ();
@@ -11,10 +10,8 @@ use YAML::XS;
 
 use OpenStack::Client::Lite::Helpers::DataAsYaml;
 
-has 'auth' => (
-    is      => 'ro',
-    #required => 1,
-);
+has 'auth' => (is => 'ro');
+has 'api'  => (is => 'ro');
 
 our $ROUTES;
 
@@ -25,7 +22,7 @@ sub init_once {
 # cannot read from data block at compile time
 INIT { init_once() }
 
-sub list_all {  
+sub list_all {
     init_once();
     return sort keys %$ROUTES;
 }
@@ -34,42 +31,45 @@ sub DESTROY {
 }
 
 our $AUTOLOAD;
+
 sub AUTOLOAD {
-    my ( @args ) = @_;
+    my (@args) = @_;
     my $call_for = $AUTOLOAD;
 
     $call_for =~ s/.*:://;
 
-    if ( my $route = $ROUTES->{$call_for} ) {
-        note "calling from AUTOLOAD.... ", $call_for;
+    if (my $route = $ROUTES->{$call_for}) {
         die "$call_for is a method call" unless ref $args[0] eq __PACKAGE__;
         my $self = shift @args;
 
-        my $service = $self->service( 
-            $route->{service}           
-        );
+        my $service = $self->service($route->{service});
 
-        my $controller = $service->can($call_for) or die "Invalid route '$call_for' for service '".ref($service)."'";
+        # not easy to overwrite can if Moo/XS::Accessor
+        my $controller = $service->can_method($call_for);
 
-        return $controller->( $service, @args );
+        die "Invalid route '$call_for' for service '" . ref($service) . "'"
+          unless defined $controller;
 
-        #return $service->dispatch( $call_for, @args );
+        return $controller->($service, @args);
     }
 
     die "Unknown function $call_for from AUTOLOAD";
 }
 
 sub service {
-    my ( $self, $name ) = @_;
+    my ($self, $name) = @_;
 
     # cache the service once
     my $k = '_service_' . $name;
-    if ( ! $self->{$k} ) {
-        note "*** get_service.... ", $name;
-        $self->{$k} = OpenStack::Client::Lite::API::get_service( 
-            name => $name, auth => $self->auth, region => $ENV{'OS_REGION_NAME'}
+    if (!$self->{$k}) {
+        $self->{$k} = OpenStack::Client::Lite::API::get_service(
+            name   => $name, auth => $self->auth,
+            region => $ENV{'OS_REGION_NAME'},
+
+            # backreference
+            api => $self->api,
         );
-    }   
+    }
 
     return $self->{$k};
 }
@@ -100,7 +100,9 @@ floatingips:
   service: network
 ports:
   service: network
-port_from_uid:  
+delete_floatingip:
+  service: network
+port_from_uid:
   service: network
 security_groups:
   service: network
