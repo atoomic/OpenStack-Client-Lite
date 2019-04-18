@@ -107,7 +107,8 @@ SKIP: {
 
             my $port_id = $port_for_device->{id};
             my $floatingip = $api->floatingips(port_id => $port_id);
-            note explain $floatingip;
+
+            #note explain $floatingip;
 
             if ($floatingip && $floatingip->{id}) {
                 $api->delete_floatingip($floatingip->{id});
@@ -191,7 +192,8 @@ SKIP: {
     {
         note "======= get a single flavor";
         my $small = $api->flavors(name => 'small');
-        note explain $small;
+
+        #note explain $small;
         is $small => hash {
             field name  => 'small';
             field links => D();
@@ -277,7 +279,7 @@ SKIP: {
 
         );
 
-        note explain $vm;
+        #note explain $vm;
 
         like $vm, hash {
             field id                  => $VALID_ID;
@@ -305,7 +307,8 @@ sub delete_test_servers {
         next unless defined $server->{id} && length $server->{id};
         note "delete server - ", "id: ", $server->{id}, " ; name: ",
           $server->{name};
-        note explain $api->delete_server($server->{id});
+
+        #note explain $api->delete_server($server->{id});
     }
 
     return;
