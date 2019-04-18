@@ -34,6 +34,10 @@ has 'route' => (
     handles => [OpenStack::Client::Lite::Routes->list_all()],
 );
 
+# for create server
+has 'create_max_timeout' => (is => 'rw', default => 5 * 60);
+has 'create_loop_sleep'  => (is => 'rw', default => 5);
+
 around BUILDARGS => sub {
     my ($orig, $class, @args) = @_;
 
@@ -98,7 +102,7 @@ sub create_vm {
     die "Failed to create server" unless _looks_valid_id($server_uid);
 
     # we are going to wait for 5 minutes fpr the server
-    my $wait_time_limit = $opts{wait_time_limit} // 60 * 5;
+    my $wait_time_limit = $opts{wait_time_limit} // $self->create_max_timeout;
 
     my $now      = time();
     my $max_time = $now + $wait_time_limit;
@@ -117,7 +121,7 @@ sub create_vm {
             $server_is_ready = 1;
             last;
         }
-        sleep 5;
+        sleep $self->create_loop_sleep if $self->create_loop_sleep;
     }
 
     die "Failed to create server: never came back as active"
