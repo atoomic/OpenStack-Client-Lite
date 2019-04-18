@@ -20,8 +20,28 @@ our @EXPORT_OK = qw(
   mock_lwp_useragent
   mock_get_request
   mock_post_request
+  application_json
+  last_http_request
 );
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
+
+# add the json header
+sub application_json {
+    my ($content) = @_;
+
+    return {
+        content => $content,
+        headers => [
+            ['Content-Type' => 'application/json'],
+        ],
+    };
+}
+
+our $LAST_REQUEST;
+
+sub last_http_request {
+    return $LAST_REQUEST;
+}
 
 sub mock_lwp_useragent {
     $mock_lwp = Test::MockModule->new('LWP::UserAgent');
@@ -35,6 +55,13 @@ sub mock_lwp_useragent {
               ->convert_blessed(0);
 
             my $req = $args[0];
+
+            my $method = uc $req->method;
+            my $uri    = $req->uri;
+
+            $LAST_REQUEST = $method . " " . $uri;
+
+            note "LWP: ", $LAST_REQUEST;
 
             if (ref $req eq 'HTTP::Request') {
                 if (my $fake = request_is_mocked($req)) {
