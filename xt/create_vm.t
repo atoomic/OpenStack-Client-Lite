@@ -79,10 +79,10 @@ SKIP: {
 
     my $api = OpenStack::Client::Lite->new(
         $endpoint,
-        'username' => $ENV{'OS_USERNAME'},
-        'password' => $ENV{'OS_PASSWORD'},
-        version    => 3,
-        scope      => {
+        username => $ENV{'OS_USERNAME'},
+        password => $ENV{'OS_PASSWORD'},
+        version  => 3,
+        scope    => {
             project => {
                 name   => $ENV{'OS_PROJECT_NAME'},
                 domain => {id => 'default'},
@@ -321,5 +321,6 @@ TODO
 - cleanup
 - split the unit test
 - divide the module
+- purge_unused_floatingips - implement and cron it
 ...
 
