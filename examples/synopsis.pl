@@ -37,7 +37,7 @@ SKIP: {
     # list all flavors
     my @flavors      = $api->flavors();
     my $small        = $api->flavors(name => 'small');
-    my @some_flavors = $api->flavors(name => qr{^(small|medium)});
+    my @some_flavors = $api->flavors(name => qr{^(?:small|medium)});
 
     # list all servers
     my @servers = $api->servers();
