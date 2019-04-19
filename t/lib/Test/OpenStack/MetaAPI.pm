@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-package Test::OpenStack::Client::Lite;
+package Test::OpenStack::MetaAPI;
 
 use strict;
 use warnings;

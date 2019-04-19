@@ -1,14 +1,14 @@
-package OpenStack::Client::Lite::API::Images;
+package OpenStack::MetaAPI::API::Images;
 
 use strict;
 use warnings;
 
 use Moo;
 
-extends 'OpenStack::Client::Lite::API::Service';
+extends 'OpenStack::MetaAPI::API::Service';
 
 # roles
-with 'OpenStack::Client::Lite::Roles::Listable';
+with 'OpenStack::MetaAPI::Roles::Listable';
 
 has '+name'           => (default => 'image');
 has '+version_prefix' => (default => 'v2');

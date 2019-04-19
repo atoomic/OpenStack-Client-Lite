@@ -1,13 +1,6 @@
-OpenStack::Client Changes
+OpenStack::MetaAPI Changes
 
-Version 1.0002
+{NEXT}
 
-    * Added custom header support in $client->call()
+- initial release of OpenStack::MetaAPI
 
-Version 1.0001
-
-    * Fix bug in selecting endpoints in $auth->service()
-
-Version 1.0000
-
-    * Initial release

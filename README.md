@@ -1,6 +1,6 @@
 # NAME
 
-OpenStack::Client::Lite - Perl5 OpenStack API abstraction on top of OpenStack::Client
+OpenStack::MetaAPI - Perl5 OpenStack API abstraction on top of OpenStack::Client
 
 # VERSION
 

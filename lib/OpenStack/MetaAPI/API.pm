@@ -1,4 +1,4 @@
-package OpenStack::Client::Lite::API;
+package OpenStack::MetaAPI::API;
 
 use strict;
 use warnings;

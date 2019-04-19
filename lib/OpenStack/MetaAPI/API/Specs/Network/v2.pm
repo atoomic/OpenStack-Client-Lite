@@ -1,11 +1,11 @@
-package OpenStack::Client::Lite::API::Specs::Network::v2;
+package OpenStack::MetaAPI::API::Specs::Network::v2;
 
 use strict;
 use warnings;
 
 use Moo;
 
-with 'OpenStack::Client::Lite::API::Specs::Roles::Service';
+with 'OpenStack::MetaAPI::API::Specs::Roles::Service';
 
 #
 # API specs: incomplete need to be continued

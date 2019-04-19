@@ -1,10 +1,10 @@
-package OpenStack::Client::Lite;
+package OpenStack::MetaAPI;
 
 use strict;
 use warnings;
 
-use OpenStack::Client::Auth         ();
-use OpenStack::Client::Lite::Routes ();
+use OpenStack::Client::Auth    ();
+use OpenStack::MetaAPI::Routes ();
 use Scalar::Util qw/weaken/;
 
 use Moo;
@@ -27,11 +27,11 @@ has 'route' => (
 
         weaken($self);
 
-        return OpenStack::Client::Lite::Routes->new(
+        return OpenStack::MetaAPI::Routes->new(
             auth => $auth,
             api  => $self);
     },
-    handles => [OpenStack::Client::Lite::Routes->list_all()],
+    handles => [OpenStack::MetaAPI::Routes->list_all()],
 );
 
 # for create server

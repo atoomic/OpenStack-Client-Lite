@@ -1,10 +1,10 @@
-package OpenStack::Client::Lite::API::Service;
+package OpenStack::MetaAPI::API::Service;
 
 use strict;
 use warnings;
 
 use Moo;
-use OpenStack::Client::Lite::API::Specs::Default ();
+use OpenStack::MetaAPI::API::Specs::Default ();
 
 has 'auth'   => (is => 'ro', required => 1);
 has 'name'   => (is => 'ro', required => 1);
@@ -64,9 +64,7 @@ sub BUILD_api_specs {    # load specs
     my $v = $self->version;
     $v =~ s{\.}{_};
     my $pkg =
-        'OpenStack::Client::Lite::API::Specs::'
-      . ucfirst($self->name) . '::'
-      . $v;
+      'OpenStack::MetaAPI::API::Specs::' . ucfirst($self->name) . '::' . $v;
 
     my $load = eval qq{ require $pkg; 1 };
     if ($load) {
@@ -75,7 +73,7 @@ sub BUILD_api_specs {    # load specs
 
     # default void specs [ undefined ]
     #   we do not have to define all specs for now
-    return OpenStack::Client::Lite::API::Specs::Default->new();
+    return OpenStack::MetaAPI::API::Specs::Default->new();
 }
 
 sub root_uri {

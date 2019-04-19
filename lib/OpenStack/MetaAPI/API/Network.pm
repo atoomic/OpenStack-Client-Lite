@@ -1,15 +1,15 @@
-package OpenStack::Client::Lite::API::Network;
+package OpenStack::MetaAPI::API::Network;
 
 use strict;
 use warnings;
 
 use Moo;
 
-extends 'OpenStack::Client::Lite::API::Service';
+extends 'OpenStack::MetaAPI::API::Service';
 
 # roles
-with 'OpenStack::Client::Lite::Roles::Listable';
-with 'OpenStack::Client::Lite::Roles::GetFromId';
+with 'OpenStack::MetaAPI::Roles::Listable';
+with 'OpenStack::MetaAPI::Roles::GetFromId';
 
 has '+name'           => (default => 'network');
 has '+version_prefix' => (default => 'v2.0');

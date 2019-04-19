@@ -1,11 +1,11 @@
-package OpenStack::Client::Lite::API::Specs::Default;
+package OpenStack::MetaAPI::API::Specs::Default;
 
 use strict;
 use warnings;
 
 use Moo;
 
-with 'OpenStack::Client::Lite::API::Specs::Roles::Service';
+with 'OpenStack::MetaAPI::API::Specs::Roles::Service';
 
 =pod
 

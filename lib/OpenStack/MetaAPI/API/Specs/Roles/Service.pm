@@ -1,11 +1,11 @@
-package OpenStack::Client::Lite::API::Specs::Roles::Service;
+package OpenStack::MetaAPI::API::Specs::Roles::Service;
 
 use strict;
 use warnings;
 
 use Moo::Role;
 
-use OpenStack::Client::Lite::Helpers::DataAsYaml;
+use OpenStack::MetaAPI::Helpers::DataAsYaml;
 
 has 'specs' => (
     is      => 'ro',
@@ -13,7 +13,7 @@ has 'specs' => (
     default => sub {
         my ($self) = @_;
         my $specs =
-          OpenStack::Client::Lite::Helpers::DataAsYaml::LoadDataFrom(ref $self)
+          OpenStack::MetaAPI::Helpers::DataAsYaml::LoadDataFrom(ref $self)
           // {};
 
         # populate missing keys

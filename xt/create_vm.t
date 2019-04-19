@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use OpenStack::Client::Lite ();
+use OpenStack::MetaAPI ();
 
 use Test2::Bundle::Extended;
 use Test2::Tools::Explain;
@@ -69,7 +69,7 @@ my $IMAGE_NAME = 'myimage';
 
 # name of the VM we are creating as part of this testsuite
 #my $SERVER_NAME = 'testsuite autobuild c7 11.81.9999.42';
-my $SERVER_NAME = 'testsuite OpenStack::Client::Lite';
+my $SERVER_NAME = 'testsuite OpenStack::MetaAPI';
 
 SKIP: {
     skip "OS_AUTH_URL unset, please source one openrc.sh file before."
@@ -77,7 +77,7 @@ SKIP: {
 
     my $endpoint = $ENV{OS_AUTH_URL} or die "Missing OS_AUTH_URL";
 
-    my $api = OpenStack::Client::Lite->new(
+    my $api = OpenStack::MetaAPI->new(
         $endpoint,
         username => $ENV{'OS_USERNAME'},
         password => $ENV{'OS_PASSWORD'},
@@ -160,18 +160,18 @@ SKIP: {
 
     is( $api,
         object {
-            prop blessed => 'OpenStack::Client::Lite';
+            prop blessed => 'OpenStack::MetaAPI';
 
             field auth => object {
                 prop blessed => 'OpenStack::Client::Auth::v3';
             };
             field route => object {
-                prop blessed => 'OpenStack::Client::Lite::Routes';
+                prop blessed => 'OpenStack::MetaAPI::Routes';
             };
             field debug => 0;
             etc;
         },
-        "can create OpenStack::Client::Lite object"
+        "can create OpenStack::MetaAPI object"
     ) or die;
 
     is [$api->services], [

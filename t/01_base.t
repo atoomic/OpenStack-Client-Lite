@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use OpenStack::Client::Lite ();
+use OpenStack::MetaAPI ();
 
 use Test2::Bundle::Extended;
 use Test2::Tools::Explain;
@@ -12,20 +12,20 @@ use Test2::Plugin::NoWarnings;
 use FindBin;
 use lib "$FindBin::Bin/lib";
 
-use Test::OpenStack::Client::Lite qw{:all};
-use Test::OpenStack::Client::Lite::Auth qw{:all};
+use Test::OpenStack::MetaAPI qw{:all};
+use Test::OpenStack::MetaAPI::Auth qw{:all};
 
 use JSON;
 
 mock_lwp_useragent();
 
 like(
-    dies { OpenStack::Client::Lite->new() },
+    dies { OpenStack::MetaAPI->new() },
     qr/Missing arguments to create Auth object/,
     "Missing arguments to create Auth object");
 
 {
-    #local $Test::OpenStack::Client::Lite::UA_DISPLAY_OUTPUT = 1;
+    #local $Test::OpenStack::MetaAPI::UA_DISPLAY_OUTPUT = 1;
     my $api = get_api_object();
 
     is ref $api->auth, "OpenStack::Client::Auth::v3",

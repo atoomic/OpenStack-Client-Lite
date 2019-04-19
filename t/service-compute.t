@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use OpenStack::Client::Lite ();
+use OpenStack::MetaAPI ();
 
 use Test2::Bundle::Extended;
 use Test2::Tools::Explain;
@@ -12,14 +12,14 @@ use Test2::Plugin::NoWarnings;
 use FindBin;
 use lib "$FindBin::Bin/lib";
 
-use Test::OpenStack::Client::Lite qw{:all};
-use Test::OpenStack::Client::Lite::Auth qw{:all};
+use Test::OpenStack::MetaAPI qw{:all};
+use Test::OpenStack::MetaAPI::Auth qw{:all};
 
 use JSON;
 
 mock_lwp_useragent();
 
-$Test::OpenStack::Client::Lite::UA_DISPLAY_OUTPUT = 1;
+$Test::OpenStack::MetaAPI::UA_DISPLAY_OUTPUT = 1;
 
 my $api = get_api_object(use_env => 0);
 

@@ -1,4 +1,4 @@
-package OpenStack::Client::Lite::Helpers::DataAsYaml;
+package OpenStack::MetaAPI::Helpers::DataAsYaml;
 
 use strict;
 use warnings;

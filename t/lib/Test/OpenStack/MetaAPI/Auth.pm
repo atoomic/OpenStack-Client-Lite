@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-package Test::OpenStack::Client::Lite::Auth;
+package Test::OpenStack::MetaAPI::Auth;
 
 use strict;
 use warnings;
@@ -9,7 +9,7 @@ use Test::More;    # for note & co
 use Test::MockModule;
 use JSON ();
 
-use Test::OpenStack::Client::Lite qw{:all};
+use Test::OpenStack::MetaAPI qw{:all};
 
 use Exporter 'import';
 our @EXPORT_OK = qw(
@@ -44,7 +44,7 @@ sub get_api_object {
 
     }
 
-    my $api = OpenStack::Client::Lite->new(
+    my $api = OpenStack::MetaAPI->new(
         $ENV{OS_AUTH_URL},
         username => $ENV{'OS_USERNAME'},
         password => $ENV{'OS_PASSWORD'},

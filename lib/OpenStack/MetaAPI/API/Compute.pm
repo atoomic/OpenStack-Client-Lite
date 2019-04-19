@@ -1,4 +1,4 @@
-package OpenStack::Client::Lite::API::Compute;
+package OpenStack::MetaAPI::API::Compute;
 
 use strict;
 use warnings;
@@ -6,14 +6,14 @@ use warnings;
 use Moo;
 
 # use Client::Lite::API role
-#with 'OpenStack::Client::Lite::API'; ...
+#with 'OpenStack::MetaAPI::API'; ...
 
-extends 'OpenStack::Client::Lite::API::Service';
+extends 'OpenStack::MetaAPI::API::Service';
 
 # roles
-#with    'OpenStack::Client::Lite::Roles::DataAsYaml';
-with 'OpenStack::Client::Lite::Roles::Listable';
-with 'OpenStack::Client::Lite::Roles::GetFromId';
+#with    'OpenStack::MetaAPI::Roles::DataAsYaml';
+with 'OpenStack::MetaAPI::Roles::Listable';
+with 'OpenStack::MetaAPI::Roles::GetFromId';
 
 has '+name' => (default => 'compute');
 

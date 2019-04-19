@@ -1,11 +1,11 @@
-package OpenStack::Client::Lite::API::Specs::Compute::v2_0;
+package OpenStack::MetaAPI::API::Specs::Compute::v2_1;
 
 use strict;
 use warnings;
 
 use Moo;
 
-with 'OpenStack::Client::Lite::API::Specs::Roles::Service';
+with 'OpenStack::MetaAPI::API::Specs::Roles::Service';
 
 1;
 
@@ -22,6 +22,7 @@ get:
     perl_api:
       method: server_from_uid
       type: getfromid
+      uid: '{server_id}'
     request:
       path:
         server_id:
@@ -38,6 +39,20 @@ get:
         hostname: {}
         image: {}
         ip: {}
+  /flavors:
+    perl_api:
+      method: flavors
+      type: listable
+      listable_key: 'flavors'
+    request:
+      query:
+        sort_key: {}
+        sort_dir: {}
+        limit: {}
+        marker: {}
+        minDisk: {}
+        minRam: {}
+        isPublic: {}
   /os-keypairs:
     perl_api:
       method: keypairs
@@ -53,6 +68,7 @@ delete:
     perl_api:
       method: delete_server_from_uid
       type: getfromid
+      uid: '{server_id}'
     request:
       path:
         server_id:

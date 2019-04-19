@@ -1,4 +1,4 @@
-package OpenStack::Client::Lite::Roles::Listable;
+package OpenStack::MetaAPI::Roles::Listable;
 
 use strict;
 use warnings;
@@ -8,7 +8,7 @@ use Moo::Role;
 sub _list {
     my ($self, $all_args, $caller_args) = @_;
 
-  # all_args are arguments from the internal OpenStack::Client::Lite::API
+  # all_args are arguments from the internal OpenStack::MetaAPI::API
   # caller_args are coming from the user to filter the results
   #   if some filters are also arguments to the request
   #   then appending them to the query will shorten the output and run it faster

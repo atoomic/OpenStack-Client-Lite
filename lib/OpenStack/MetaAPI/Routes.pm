@@ -1,14 +1,14 @@
-package OpenStack::Client::Lite::Routes;
+package OpenStack::MetaAPI::Routes;
 
 use strict;
 use warnings;
 
 use Moo;
 
-use OpenStack::Client::Lite::API ();
+use OpenStack::MetaAPI::API ();
 use YAML::XS;
 
-use OpenStack::Client::Lite::Helpers::DataAsYaml;
+use OpenStack::MetaAPI::Helpers::DataAsYaml;
 
 has 'auth' => (is => 'ro');
 has 'api'  => (is => 'ro');
@@ -16,7 +16,7 @@ has 'api'  => (is => 'ro');
 our $ROUTES;
 
 sub init_once {
-    $ROUTES //= OpenStack::Client::Lite::Helpers::DataAsYaml::LoadData();
+    $ROUTES //= OpenStack::MetaAPI::Helpers::DataAsYaml::LoadData();
 }
 
 # cannot read from data block at compile time
@@ -62,7 +62,7 @@ sub service {
     # cache the service once
     my $k = '_service_' . $name;
     if (!$self->{$k}) {
-        $self->{$k} = OpenStack::Client::Lite::API::get_service(
+        $self->{$k} = OpenStack::MetaAPI::API::get_service(
             name   => $name, auth => $self->auth,
             region => $ENV{'OS_REGION_NAME'},
 

@@ -1,4 +1,4 @@
-package OpenStack::Client::Lite::Roles::GetFromId;
+package OpenStack::MetaAPI::Roles::GetFromId;
 
 use strict;
 use warnings;
