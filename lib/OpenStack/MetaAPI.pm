@@ -178,4 +178,124 @@ sub _looks_valid_id {
 
 1;
 
-__END__
+=pod
+
+=encoding utf-8
+
+=head1 SYNOPSIS
+
+# EXAMPLE: examples/synopsis.pl
+
+=head1 DESCRIPTION
+
+OpenStack::MetaAPI
+
+Using OpenStack::MetaAPI you can call routes from any service directly on the main object.
+Helpers are defined from the specs defined https://developer.openstack.org/api-guide/quick-start/#current-api-versions
+
+Currently only a very small part of the specs have been imported to this project.
+
+
+=head1 Available functions / methods
+
+=head2 new( [ Arguments for OpenStack::Client::Auth ] )
+
+Create one OpenStack::MetaAPI object.
+For now all arguments passed to C<new> are used to create one L<OpenStack::Client::Auth>.
+
+=head2 $api->flavors( [ %filter ] )
+
+List all flavors from the compute service. [view synopsis for some sample usage]
+
+=head2 $api->servers( [ %filter ] )
+
+List all servers from the compute service. [view synopsis for some sample usage]
+
+=head2 $api->floatingips( [ %filter ] )
+
+List all floatingips from the network service. [view synopsis for some sample usage]
+
+=head2 $api->security_groups( [ %filter ] )
+
+List all security_groups from the network service. [view synopsis for some sample usage]
+
+=head2 $api->image_from_uid( $image_uid )
+
+Select one image from its UID. [view synopsis for some sample usage]
+
+=head2 $api->image_from_name( $image_name )
+
+Select one image from its name. [view synopsis for some sample usage]
+
+=head2 $api->create_vm( %args )
+
+Create one server from one image with one floating IP, wait for the server to be ready.
+
+        my $vm = $api->create_vm(
+            name     => 'SERVER_NAME',
+            image    => 'IMAGE_UID or IMAGE_NAME',   # image used to create the VM
+            flavor   => 'small',
+            key_name => 'your ssh key name',         # optional key to set
+            security_group => 'default',    # security group to use, by default use 'default'
+            network => 'NETWORK_NAME or NETWORK_ID',    # network group to use
+            network_for_floating_ip => 'NETWORK_NAME or NETWORK_ID',
+        );
+
+=head2 $api->delete_server( $server_id );
+
+Delete a server from its id. Note floating IP linked to the server are also deleted.
+
+=head1 SEE ALSO
+
+This module is a wrapper around L<OpenStack::Client> and L<OpenStack::Client::Auth>
+
+=over
+
+=item L<OpenStack::Client> - OpenStack API client.
+
+=back
+
+=head1 TODO
+
+=over
+
+=item refactor/clean existing prototype
+
+=item increase API Specs defintion
+
+=item plug methods to route from API Specs
+
+=item helper to purge unused floatingips
+
+=item helper to purge unused servers
+
+=item increase POD & add some extra examples
+
+=item POD for using filtering: using RegExp, ...
+
+=item improve filtering on the request when described by the specs
+
+=back
+
+=head1 LICENSE
+
+This software is copyright (c) 2019 by cPanel, L.L.C.
+
+This is free software; you can redistribute it and/or modify it under the same terms as the Perl 5 programming
+language system itself.
+
+=head1 DISCLAIMER OF WARRANTY
+
+BECAUSE THIS SOFTWARE IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY FOR THE SOFTWARE, TO THE EXTENT PERMITTED BY
+APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES PROVIDE THE
+SOFTWARE "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE
+OF THE SOFTWARE IS WITH YOU. SHOULD THE SOFTWARE PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING,
+REPAIR, OR CORRECTION.
+
+IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY
+WHO MAY MODIFY AND/OR REDISTRIBUTE THE SOFTWARE AS PERMITTED BY THE ABOVE LICENCE, BE LIABLE TO YOU FOR DAMAGES,
+INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THE
+SOFTWARE (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR
+THIRD PARTIES OR A FAILURE OF THE SOFTWARE TO OPERATE WITH ANY OTHER SOFTWARE), EVEN IF SUCH HOLDER OR OTHER PARTY HAS
+BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.

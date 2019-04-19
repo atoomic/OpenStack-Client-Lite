@@ -106,12 +106,3 @@ sub delete_test_servers {
 
 __END__
 
-TODO
-- cleanup
-- split the xt unit test
-- purge unused_floatingips - implement and cron it
-- purge unused_servers     - implement it
-- basic POD
-- publish beta version
-...
-
