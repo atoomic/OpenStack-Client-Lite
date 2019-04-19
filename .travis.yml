@@ -22,6 +22,7 @@ matrix:
   allow_failures:
     - perl: blead
 before_install:
+  - rm -f dist.ini # force to use Makefile.PL for faster smoke time
   - eval $(curl https://travis-perl.github.io/init) --auto
 branches:
   except:
