@@ -195,6 +195,8 @@ Helpers are defined from the specs defined https://developer.openstack.org/api-g
 
 Currently only a very small part of the specs have been imported to this project.
 
+This software is currently in C<PRE-ALPHA> stage... use it at your own risk!
+Feel free to report issues to the Bug Tracker or contribute.
 
 =head1 Available functions / methods
 
