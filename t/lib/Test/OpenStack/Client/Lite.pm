@@ -21,7 +21,11 @@ our @EXPORT_OK = qw(
   mock_get_request
   mock_post_request
   mock_put_request
+  mock_delete_request
+
   application_json
+  txt_plain
+
   last_http_request
 );
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
@@ -34,6 +38,17 @@ sub application_json {
         content => $content,
         headers => [
             ['Content-Type' => 'application/json'],
+        ],
+    };
+}
+
+sub txt_plain {
+    my ($content) = @_;
+
+    return {
+        content => $content,
+        headers => [
+            ['Content-Type' => 'text/plain'],
         ],
     };
 }
@@ -160,6 +175,12 @@ sub mock_put_request {
     my ($uri, $content, $code) = @_;
 
     return mock_method_request(put => $uri, $content, $code);
+}
+
+sub mock_delete_request {
+    my ($uri, $content, $code) = @_;
+
+    return mock_method_request(delete => $uri, $content, $code);
 }
 
 sub mock_method_request {

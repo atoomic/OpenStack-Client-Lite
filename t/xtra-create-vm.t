@@ -320,7 +320,7 @@ sub json_for_floatingips {
             },
             "tags": ["tag1,tag2"],
             "port_forwardings": []
-        },
+        }
     ]
 }
 JSON

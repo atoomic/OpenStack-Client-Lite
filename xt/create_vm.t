@@ -318,10 +318,10 @@ __END__
 
 TODO
 - rename as OpenStack::MetaAPI
-- add the ip to the answer from create_vm
 - cleanup
-- split the unit test
+- split the xt unit test
 - divide the module
-- purge_unused_floatingips - implement and cron it
+- purge unused_floatingips - implement and cron it
+- purge unused_servers     - implement it
 ...
 
