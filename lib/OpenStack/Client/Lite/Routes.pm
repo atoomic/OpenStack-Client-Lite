@@ -20,7 +20,7 @@ sub init_once {
 }
 
 # cannot read from data block at compile time
-INIT { init_once() }
+#INIT { init_once() }
 
 sub list_all {
     init_once();
