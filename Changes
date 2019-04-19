@@ -1,6 +1,6 @@
 OpenStack::MetaAPI Changes
 
-{NEXT}
+{{NEXT}}
 
 - initial release of OpenStack::MetaAPI
 this is very very :alpha: state at this stage...
