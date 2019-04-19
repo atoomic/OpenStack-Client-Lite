@@ -1,6 +1,7 @@
 OpenStack::MetaAPI Changes
 
 {{NEXT}}
+- fix some test dependency issues
 
 - initial release of OpenStack::MetaAPI
 this is very very :alpha: state at this stage...
