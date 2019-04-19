@@ -169,7 +169,7 @@ SKIP: {
                 prop blessed => 'OpenStack::Client::Lite::Routes';
             };
             field debug => 0;
-            end;
+            etc;
         },
         "can create OpenStack::Client::Lite object"
     ) or die;
@@ -291,8 +291,8 @@ SKIP: {
         }, "created a vm with a floating ip" or diag explain $vm;
     }
 
-    note "delete_test_servers after test";
-
+    # for now keep the server alive so we can play with it...
+    #note "delete_test_servers after test";
     #delete_test_servers( $api );
 }
 
@@ -308,7 +308,7 @@ sub delete_test_servers {
         note "delete server - ", "id: ", $server->{id}, " ; name: ",
           $server->{name};
 
-        #note explain $api->delete_server($server->{id});
+        $api->delete_server($server->{id});
     }
 
     return;
@@ -317,6 +317,7 @@ sub delete_test_servers {
 __END__
 
 TODO
+- rename as OpenStack::MetaAPI
 - add the ip to the answer from create_vm
 - cleanup
 - split the unit test

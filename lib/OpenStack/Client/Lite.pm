@@ -114,6 +114,7 @@ sub create_vm {
     while (time() < $max_time) {
 
         $server_status = $self->server_from_uid($server_uid);
+
         if (   ref $server_status
             && $server_status->{status}
             && $server_status->{status}

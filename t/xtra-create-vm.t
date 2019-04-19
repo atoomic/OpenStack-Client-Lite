@@ -26,7 +26,7 @@ my $api = get_api_object(use_env => 0);
 ok $api, "got one api object" or die;
 
 {
-    note "Testing Network service";
+    note "Testing VM creation";
 
     mock_get_request(
         'http://127.0.0.1:8774/v2.1/flavors',
@@ -84,7 +84,7 @@ ok $api, "got one api object" or die;
     );
 
     $api->create_max_timeout(2);
-    $api->create_loop_sleep(1);    # disable sleep
+    $api->create_loop_sleep(1);
 
     like(
         dies { $create_vm->() },
@@ -93,13 +93,247 @@ ok $api, "got one api object" or die;
 
     note "attempt 3";
 
-    # continue...
-    # fist time the server is inactive
-    # second time the server is active
+    $api->create_max_timeout(2);
+    $api->create_loop_sleep(0);
+
+    my $iteration = 0;
+    mock_get_request(
+        'http://127.0.0.1:8774/v2.1/servers/aaaaa-bbbb-ccccc-dddd',
+        sub {
+            my ($request) = @_;
+            note "checking server state ", ++$iteration;
+
+            # two fist calls the server is inactive
+            if ($iteration <= 2) {
+                return {
+                    code => 200,
+                    msg  => "server is not ready yet",
+                    %{application_json(json_for_server())},
+                };
+            }
+
+            # then the server is active
+
+            die "Too many calls to servers/aaaaa-bbbb-ccccc-dddd"
+              if $iteration >= 10;
+
+            return {
+                code => 200,
+                msg  => "server is ready",
+                %{application_json(json_for_server_ready())},
+            };
+
+        },
+    );
+
+    mock_get_request(
+        'http://127.0.0.1:9696/v2.0/floatingips',
+        application_json(json_for_floatingips()),
+    );
+
+    # create one floating IP
+    mock_post_request(
+        'http://127.0.0.1:9696/v2.0/floatingips',
+        application_json(json_for_post_floatingips()),
+    );
+
+    mock_get_request(
+        'http://127.0.0.1:9696/v2.0/ports?device_id=aaaaa-bbbb-ccccc-dddd',
+        application_json(json_for_ports_device_id()),
+    );
+
+    mock_put_request(
+        'http://127.0.0.1:9696/v2.0/floatingips/ffffff-000000-fffff-111111-7777777',
+        application_json(json_for_put_floatingips()),
+    );
+
+    my $vm = $create_vm->();
+
+    is $vm => hash {
+        field id                  => '33748c23-38dd-4f70-b774-522fc69e7b67';
+        field floating_ip_address => '10.1.2.3';
+        field floating_ip_id      => 'ffffff-000000-fffff-111111-7777777';
+        field status              => 'ACTIVE';
+        field user_id             => 'fake';
+
+        etc;
+
+    }, "create a vm";
 
 }
 
 done_testing;
+
+sub json_for_ports_device_id {
+    return <<'JSON';
+{
+    "ports": [
+        {
+            "admin_state_up": true,
+            "allowed_address_pairs": [],
+            "created_at": "2016-03-08T20:19:41",
+            "data_plane_status": null,
+            "description": "",
+            "device_id": "aaaaa-bbbb-ccccc-dddd",
+            "device_owner": "network:router_gateway",
+            "dns_assignment": {
+                "hostname": "myport",
+                "ip_address": "172.24.4.2",
+                "fqdn": "myport.my-domain.org"
+            },
+            "dns_domain": "my-domain.org.",
+            "dns_name": "myport",
+            "extra_dhcp_opts": [
+            {
+                "opt_value": "pxelinux.0",
+                "ip_version": 4,
+                "opt_name": "bootfile-name"
+            }
+            ],
+            "fixed_ips": [
+                {
+                    "ip_address": "172.24.4.2",
+                    "subnet_id": "008ba151-0b8c-4a67-98b5-0d2b87666062"
+                }
+            ],
+            "id": "d80b1a3b-4fc1-49f3-952e-1e2ab7081d8b",
+            "ip_allocation": "immediate",
+            "mac_address": "fa:16:3e:58:42:ed",
+            "name": "",
+            "network_id": "70c1db1f-b701-45bd-96e0-a313ee3430b3",
+            "project_id": "",
+            "revision_number": 1,
+            "security_groups": [],
+            "status": "ACTIVE",
+            "tags": ["tag1,tag2"],
+            "tenant_id": "",
+            "updated_at": "2016-03-08T20:19:41",
+            "qos_policy_id": "29d5e02e-d5ab-4929-bee4-4a9fc12e22ae",
+            "port_security_enabled": false,
+            "uplink_status_propagation": false
+        }
+    ]
+}
+JSON
+}
+
+sub json_for_put_floatingips {
+    return <<'JSON';
+{
+    "floatingip": {
+        "created_at": "2016-12-21T10:55:50Z",
+        "fixed_ip_address": "172.24.4.228",
+        "floating_ip_address": "10.1.2.3",
+        "floating_network_id": "376da547-b977-4cfe-9cba-275c80debf57",
+        "id": "ffffff-000000-fffff-111111-7777777",
+        "description": "floating ip for testing",
+        "dns_domain": "my-domain.org.",
+        "dns_name": "myfip",
+        "port_id": "fc861431-0e6c-4842-a0ed-e2363f9bc3a8",
+        "project_id": "4969c491a3c74ee4af974e6d800c62de",
+        "revision_number": 3,
+        "router_id": "d23abc8d-2991-4a55-ba98-2aaea84cc72f",
+        "status": "ACTIVE",
+        "tags": ["tag1,tag2"],
+        "tenant_id": "4969c491a3c74ee4af974e6d800c62de",
+        "updated_at": "2016-12-22T03:13:49Z",
+        "port_details": {
+            "status": "ACTIVE",
+            "name": "",
+            "admin_state_up": true,
+            "network_id": "02dd8479-ef26-4398-a102-d19d0a7b3a1f",
+            "device_owner": "compute:nova",
+            "mac_address": "fa:16:3e:b1:3b:30",
+            "device_id": "8e3941b4-a6e9-499f-a1ac-2a4662025cba"
+        },
+        "port_forwardings": []
+    }
+}
+JSON
+}
+
+sub json_for_post_floatingips {
+    return <<'JSON';
+{
+    "floatingip": {
+        "fixed_ip_address": "172.24.4.228",
+        "floating_ip_address": "10.1.2.3",
+        "floating_network_id": "376da547-b977-4cfe-9cba-275c80debf57",
+        "id": "ffffff-000000-fffff-111111-7777777",
+        "port_id": "ce705c24-c1ef-408a-bda3-7bbd946164ab",
+        "router_id": "d23abc8d-2991-4a55-ba98-2aaea84cc72f",
+        "status": "ACTIVE",
+        "project_id": "4969c491a3c74ee4af974e6d800c62de",
+        "tenant_id": "4969c491a3c74ee4af974e6d800c62de",
+        "description": "floating ip for testing",
+        "dns_domain": "my-domain.org.",
+        "dns_name": "myfip",
+        "created_at": "2016-12-21T01:36:04Z",
+        "updated_at": "2016-12-21T01:36:04Z",
+        "revision_number": 1,
+        "port_details": {
+            "status": "ACTIVE",
+            "name": "",
+            "admin_state_up": true,
+            "network_id": "02dd8479-ef26-4398-a102-d19d0a7b3a1f",
+            "device_owner": "compute:nova",
+            "mac_address": "fa:16:3e:b1:3b:30",
+            "device_id": "8e3941b4-a6e9-499f-a1ac-2a4662025cba"
+        },
+        "tags": ["tag1,tag2"],
+        "port_forwardings": []
+    }
+}
+JSON
+}
+
+sub json_for_floatingips {
+
+# https://developer.openstack.org/api-ref/compute/?expanded=show-server-details-detail
+    return <<'JSON';
+{
+    "floatingips": [
+        {
+            "router_id": "d23abc8d-2991-4a55-ba98-2aaea84cc72f",
+            "description": "for test",
+            "dns_domain": "my-domain.org.",
+            "dns_name": "myfip",
+            "created_at": "2016-12-21T10:55:50Z",
+            "updated_at": "2016-12-21T10:55:53Z",
+            "revision_number": 1,
+            "project_id": "4969c491a3c74ee4af974e6d800c62de",
+            "tenant_id": "4969c491a3c74ee4af974e6d800c62de",
+            "floating_network_id": "376da547-b977-4cfe-9cba-275c80debf57",
+            "fixed_ip_address": "10.0.0.3",
+            "floating_ip_address": "172.24.4.228",
+            "port_id": "ce705c24-c1ef-408a-bda3-7bbd946164ab",
+            "id": "2f245a7b-796b-4f26-9cf9-9e82d248fda7",
+            "status": "ACTIVE",
+            "port_details": {
+                "status": "ACTIVE",
+                "name": "",
+                "admin_state_up": true,
+                "network_id": "02dd8479-ef26-4398-a102-d19d0a7b3a1f",
+                "device_owner": "compute:nova",
+                "mac_address": "fa:16:3e:b1:3b:30",
+                "device_id": "8e3941b4-a6e9-499f-a1ac-2a4662025cba"
+            },
+            "tags": ["tag1,tag2"],
+            "port_forwardings": []
+        },
+    ]
+}
+JSON
+}
+
+sub json_for_server_ready {
+    my $json = json_for_server();
+
+    my $server = JSON::decode_json($json);
+    $server->{server}->{status} = 'ACTIVE';
+
+    return JSON::encode_json($server);
+}
 
 sub json_for_server {
 
@@ -493,97 +727,6 @@ sub json_for_flavors {
             ],
             "name": "small.description",
             "description": "test description"
-        }
-    ]
-}
-JSON
-}
-
-sub json_for_floatingips {
-
-# https://developer.openstack.org/api-ref/compute/?expanded=show-server-details-detail
-    return <<'JSON';
-{
-    "floatingips": [
-        {
-            "router_id": "d23abc8d-2991-4a55-ba98-2aaea84cc72f",
-            "description": "for test",
-            "dns_domain": "my-domain.org.",
-            "dns_name": "myfip",
-            "created_at": "2016-12-21T10:55:50Z",
-            "updated_at": "2016-12-21T10:55:53Z",
-            "revision_number": 1,
-            "project_id": "4969c491a3c74ee4af974e6d800c62de",
-            "tenant_id": "4969c491a3c74ee4af974e6d800c62de",
-            "floating_network_id": "376da547-b977-4cfe-9cba-275c80debf57",
-            "fixed_ip_address": "10.0.0.3",
-            "floating_ip_address": "172.24.4.228",
-            "port_id": "ce705c24-c1ef-408a-bda3-7bbd946164ab",
-            "id": "2f245a7b-796b-4f26-9cf9-9e82d248fda7",
-            "status": "ACTIVE",
-            "port_details": {
-                "status": "ACTIVE",
-                "name": "",
-                "admin_state_up": true,
-                "network_id": "02dd8479-ef26-4398-a102-d19d0a7b3a1f",
-                "device_owner": "compute:nova",
-                "mac_address": "fa:16:3e:b1:3b:30",
-                "device_id": "8e3941b4-a6e9-499f-a1ac-2a4662025cba"
-            },
-            "tags": ["tag1,tag2"],
-            "port_forwardings": []
-        },
-        {
-            "router_id": null,
-            "description": "for test",
-            "dns_domain": "my-domain.org.",
-            "dns_name": "myfip2",
-            "created_at": "2016-12-21T11:55:50Z",
-            "updated_at": "2016-12-21T11:55:53Z",
-            "revision_number": 2,
-            "project_id": "4969c491a3c74ee4af974e6d800c62de",
-            "tenant_id": "4969c491a3c74ee4af974e6d800c62de",
-            "floating_network_id": "376da547-b977-4cfe-9cba-275c80debf57",
-            "fixed_ip_address": null,
-            "floating_ip_address": "172.24.4.227",
-            "port_id": null,
-            "id": "61cea855-49cb-4846-997d-801b70c71bdd",
-            "status": "DOWN",
-            "port_details": null,
-            "tags": ["tag1,tag2"],
-            "port_forwardings": []
-        },
-        {
-            "router_id": "0303bf18-2c52-479c-bd68-e0ad712a1639",
-            "description": "for test with port forwarding",
-            "dns_domain": "my-domain.org.",
-            "dns_name": "myfip3",
-            "created_at": "2018-06-15T02:12:48Z",
-            "updated_at": "2018-06-15T02:12:57Z",
-            "revision_number": 1,
-            "project_id": "4969c491a3c74ee4af974e6d800c62de",
-            "tenant_id": "4969c491a3c74ee4af974e6d800c62de",
-            "floating_network_id": "376da547-b977-4cfe-9cba-275c80debf57",
-            "fixed_ip_address": null,
-            "floating_ip_address": "172.24.4.42",
-            "port_id": null,
-            "id": "898b198e-49f7-47d6-a7e1-53f626a548e6",
-            "status": "ACTIVE",
-            "tags": [],
-            "port_forwardings": [
-                {
-                    "protocol": "tcp",
-                    "internal_ip_address": "10.0.0.19",
-                    "internal_port": 25,
-                    "external_port": 2225
-                },
-                {
-                    "protocol": "tcp",
-                    "internal_ip_address": "10.0.0.18",
-                    "internal_port": 16666,
-                    "external_port": 8786
-                }
-            ]
         }
     ]
 }

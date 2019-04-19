@@ -20,6 +20,7 @@ our @EXPORT_OK = qw(
   mock_lwp_useragent
   mock_get_request
   mock_post_request
+  mock_put_request
   application_json
   last_http_request
 );
@@ -116,7 +117,8 @@ sub request_is_mocked {
         my $mocked = $MOCKED_REQUEST{$method}->{$uri};
 
         ### maybe just for the content??
-        $mocked = $mocked->{msg}->($req) if ref $mocked->{msg} eq 'CODE';
+        $mocked = $mocked->{content}->($req)
+          if ref $mocked->{content} eq 'CODE';
 
         ## convert it as one HTTP::Response object
         my $response = HTTP::Response->new($mocked->{code}, $mocked->{msg});
@@ -154,6 +156,12 @@ sub mock_post_request {
     return mock_method_request(post => $uri, $content, $code);
 }
 
+sub mock_put_request {
+    my ($uri, $content, $code) = @_;
+
+    return mock_method_request(put => $uri, $content, $code);
+}
+
 sub mock_method_request {
     my ($method, $uri, $content, $code) = @_;
 
@@ -172,6 +180,8 @@ sub mock_method_request {
     if (ref $content eq 'HASH') {
         $mocked = {%$mocked, %$content};
     } else {
+
+        # dynamic or static content: can hold a string or a code ref
         $mocked->{content} = $content;
     }
 
