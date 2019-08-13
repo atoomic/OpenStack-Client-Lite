@@ -191,7 +191,7 @@ sub _looks_valid_id {
 OpenStack::MetaAPI
 
 Using OpenStack::MetaAPI you can call routes from any service directly on the main object.
-Helpers are defined from the specs defined https://developer.openstack.org/api-guide/quick-start/#current-api-versions
+Helpers are defined from the L<specs|https://docs.openstack.org/api-quick-start/#current-api-versions> defined.
 
 Currently only a very small part of the specs have been imported to this project.
 
